@@ -20,11 +20,16 @@ npm run build
 
 ## GitHub Pages
 
-Сайт публикуется автоматически при push в `main`: https://serjo96.github.io/idea-validator/
+Сайт: https://serjo96.github.io/idea-validator/
 
-1. В репозитории: **Settings → Pages → Source: GitHub Actions**
-2. Закоммить и запушить изменения в `main`
-3. Дождаться успешного workflow **Deploy to GitHub Pages**
+Деплой идёт через GitHub Actions при push в `main`.
+
+**Важно:** в **Settings → Pages** источник должен быть **GitHub Actions**, а не *Deploy from a branch*.  
+Если выбрана ветка `main`, на сайт попадёт исходный `index.html` с `/src/main.tsx` — в консоли будет 404.
+
+1. **Settings → Pages → Build and deployment → Source: GitHub Actions**
+2. Push в `main` или вручную запустить workflow **Deploy to GitHub Pages**
+3. Дождаться зелёной галочки в Actions
 
 ## Структура
 
