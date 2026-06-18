@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AiSection } from '../AiSection';
 import type { SavedResult } from '../types';
+
 const answers = Object.fromEntries(
   [
     'user',
@@ -16,6 +17,7 @@ const answers = Object.fromEntries(
     'test',
   ].map((id) => [id, 2]),
 );
+
 const result: SavedResult = {
   id: 'r1',
   createdAt: '2026-01-01',
@@ -25,44 +27,53 @@ const result: SavedResult = {
   score: 20,
   category: 'Сильная гипотеза для проверки',
 };
+
 let writeText: ReturnType<typeof vi.fn>;
+
 beforeEach(() => {
   writeText = vi.fn().mockResolvedValue(undefined);
   Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
-  vi.spyOn(window, 'open').mockReturnValue({} as Window);
 });
+
 describe('Ask AI', () => {
-  it('copies prompt and opens the official URL with safe features', async () => {
-    fireEvent.click(
-      render(<AiSection result={result} />).getByRole('button', { name: /Открыть ChatGPT/ }),
-    );
-    expect(window.open).toHaveBeenCalledWith(
-      'https://chatgpt.com/',
-      '_blank',
-      'noopener,noreferrer',
-    );
-    await waitFor(() =>
-      expect(writeText).toHaveBeenCalledWith(expect.stringContaining('Тестовая идея')),
-    );
-    expect(await screen.findByRole('status')).toHaveTextContent('Промпт скопирован');
-  });
-  it('opens each provider official URL', () => {
+  it('does not copy to clipboard when opening a provider link', () => {
     render(<AiSection result={result} />);
-    fireEvent.click(screen.getByRole('button', { name: /Открыть Claude/ }));
-    fireEvent.click(screen.getByRole('button', { name: /Открыть Gemini/ }));
-    expect(window.open).toHaveBeenNthCalledWith(
-      1,
-      'https://claude.ai/',
-      '_blank',
-      'noopener,noreferrer',
-    );
-    expect(window.open).toHaveBeenNthCalledWith(
-      2,
-      'https://gemini.google.com/',
-      '_blank',
-      'noopener,noreferrer',
+    fireEvent.click(screen.getByRole('link', { name: /Открыть ChatGPT/ }));
+    expect(writeText).not.toHaveBeenCalled();
+  });
+
+  it('links ChatGPT with encoded prompt in URL', () => {
+    render(<AiSection result={result} />);
+    const link = screen.getByRole('link', { name: /Открыть ChatGPT/ });
+    expect(link).toHaveAttribute('href', expect.stringContaining('https://chatgpt.com/#?q='));
+    expect(link.getAttribute('href')).toContain(encodeURIComponent('Тестовая идея'));
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+
+  it('links Claude and Gemini with prompt query params', () => {
+    render(<AiSection result={result} />);
+    const claude = screen.getByRole('link', { name: /Открыть Claude/ });
+    const gemini = screen.getByRole('link', { name: /Открыть Gemini/ });
+
+    expect(claude.getAttribute('href')).toMatch(/^https:\/\/claude\.ai\/new\?q=/);
+    expect(gemini.getAttribute('href')).toMatch(/^https:\/\/gemini\.google\.com\/app\?q=/);
+    expect(claude.getAttribute('href')).toContain(encodeURIComponent('Тестовая идея'));
+    expect(gemini.getAttribute('href')).toContain(encodeURIComponent('Тестовая идея'));
+  });
+
+  it('updates provider links when prompt is edited', () => {
+    render(<AiSection result={result} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Посмотреть промпт' }));
+    fireEvent.change(screen.getByLabelText('Редактируемый промпт'), {
+      target: { value: 'Моя правка' },
+    });
+
+    expect(screen.getByRole('link', { name: /Открыть ChatGPT/ }).getAttribute('href')).toContain(
+      encodeURIComponent('Моя правка'),
     );
   });
+
   it('shows selectable fallback when clipboard fails', async () => {
     writeText.mockRejectedValue(new Error('no'));
     render(<AiSection result={result} />);
@@ -70,15 +81,7 @@ describe('Ask AI', () => {
     const fallback = await screen.findByLabelText('Скопируй выделенный промпт вручную');
     expect((fallback as HTMLTextAreaElement).value).toContain('Тестовая идея');
   });
-  it('shows a normal link if the popup is blocked', () => {
-    vi.mocked(window.open).mockReturnValue(null);
-    render(<AiSection result={result} />);
-    fireEvent.click(screen.getByRole('button', { name: /Открыть Claude/ }));
-    expect(screen.getByRole('link', { name: 'Открыть Claude' })).toHaveAttribute(
-      'href',
-      'https://claude.ai/',
-    );
-  });
+
   it('edits only prompt text and resets the original', async () => {
     render(<AiSection result={result} />);
     fireEvent.click(screen.getByRole('button', { name: 'Посмотреть промпт' }));

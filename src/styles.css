@@ -488,6 +488,8 @@ footer {
 .provider-card {
   min-height: 150px;
   text-align: left;
+  text-decoration: none;
+  color: inherit;
   border: 1px solid #c5cdbc;
   border-radius: 15px;
   background: #fffefa;
