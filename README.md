@@ -18,6 +18,14 @@ npm test
 npm run build
 ```
 
+## GitHub Pages
+
+Сайт публикуется автоматически при push в `main`: https://serjo96.github.io/idea-validator/
+
+1. В репозитории: **Settings → Pages → Source: GitHub Actions**
+2. Закоммить и запушить изменения в `main`
+3. Дождаться успешного workflow **Deploy to GitHub Pages**
+
 ## Структура
 
 - `src/questions.ts` — конфигурация вопросов и вариантов ответа.
