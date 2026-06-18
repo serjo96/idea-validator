@@ -1,9 +1,23 @@
-import type { SavedResult } from './types';
+import type { ResultCategory, SavedResult } from './types';
+
 const KEY = 'idea-validator-results';
 const DRAFT = 'idea-validator-draft';
+
+const LEGACY_CATEGORIES: Record<string, ResultCategory> = {
+  'Красивая механика': 'beautifulMechanism',
+  'Слабая или неполная гипотеза': 'weakHypothesis',
+  'Стоит провести дешёвый тест': 'cheapTest',
+  'Сильная гипотеза для проверки': 'strongHypothesis',
+};
+
+const normalizeResult = (r: SavedResult): SavedResult => ({
+  ...r,
+  category: LEGACY_CATEGORIES[r.category as string] ?? r.category,
+});
+
 export const loadResults = (): SavedResult[] => {
   try {
-    return JSON.parse(localStorage.getItem(KEY) || '[]');
+    return (JSON.parse(localStorage.getItem(KEY) || '[]') as SavedResult[]).map(normalizeResult);
   } catch {
     return [];
   }

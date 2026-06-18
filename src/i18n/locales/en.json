@@ -1,0 +1,233 @@
+{
+  "common": {
+    "backHome": "← Home",
+    "backHistory": "← History",
+    "back": "← Back",
+    "next": "Next →",
+    "open": "Open",
+    "delete": "Delete",
+    "outOf": "of {{total}}",
+    "notSpecified": "Not specified",
+    "notTriggered": "None triggered"
+  },
+  "shell": {
+    "brand": "Idea Validator",
+    "history": "History",
+    "footer": "Deterministic scoring · Data stays in your browser",
+    "language": "Language"
+  },
+  "home": {
+    "eyebrow": "Idea reality check · 3–5 minutes",
+    "title": "Separate a real problem from a clever mechanism.",
+    "lead": "A short structured test shows hypothesis quality and suggests the next cheap step — without AI or false precision.",
+    "start": "Validate idea",
+    "resume": "Resume test",
+    "fine": "This is an initial filter, not proof of viability.",
+    "cardLabel": "What you get",
+    "card1Title": "10 questions",
+    "card1Text": "About the user, behavior, value, payment, and evidence.",
+    "card2Title": "A clear next step",
+    "card2Text": "The result is calculated with transparent rules."
+  },
+  "about": {
+    "eyebrow": "Before you start",
+    "title": "Briefly describe the idea",
+    "lead": "A couple of concrete sentences is enough. This is not an investor pitch.",
+    "nameLabel": "Idea name",
+    "descriptionLabel": "Description in 2–5 sentences",
+    "audienceLabel": "Who is the intended user",
+    "interestLabel": "Why the idea seems interesting (optional)",
+    "submit": "Go to questions →"
+  },
+  "quiz": {
+    "finalStep": "Final step",
+    "progress": "Question {{current}} of {{total}}",
+    "cheapTestTitle": "What is the cheapest test you see for this idea right now?",
+    "cheapTestWhy": "Does not affect the score, but becomes part of the final report and AI prompt.",
+    "cheapTestPlaceholder": "For example: offer a manual service to ten small coffee shop owners…",
+    "showResult": "Show result"
+  },
+  "history": {
+    "eyebrow": "Saved locally",
+    "title": "Validation history",
+    "emptyTitle": "Nothing here yet",
+    "emptyText": "Complete your first test — the result will be saved only in this browser.",
+    "start": "Validate idea"
+  },
+  "result": {
+    "eyebrow": "Validation result",
+    "disclaimer": "The result does not prove the idea will succeed or fail. It shows the quality of the current hypothesis and helps choose the next step.",
+    "strengths": "Strengths",
+    "strengthsEmpty": "No strong signals identified yet.",
+    "weaknesses": "Weak spots",
+    "weaknessesEmpty": "No obvious weak signals — but they still need to be checked.",
+    "stopTitle": "Stop factors triggered",
+    "stopText": "They capped the final category even if the total score is higher.",
+    "nextKicker": "Don't build — validate",
+    "nextTitle": "Recommended next action",
+    "allAnswers": "All answers by criterion",
+    "copy": "Copy result",
+    "save": "Save result",
+    "reset": "Validate another idea",
+    "copied": "Result copied",
+    "saved": "Result saved",
+    "nextSteps": "Next steps:"
+  },
+  "ai": {
+    "kicker": "Additional validation",
+    "title": "Ask AI",
+    "lead": "Open your chosen service — the prompt will already be in the input field. Just press Enter.",
+    "openWithPrompt": "Open with prompt ready",
+    "openProvider": "Open {{name}} with prompt ready",
+    "copyPrompt": "Copy prompt",
+    "hidePrompt": "Hide prompt",
+    "showPrompt": "View prompt",
+    "download": "Download result as TXT",
+    "promptCopied": "Prompt copied",
+    "copyFailed": "Auto-copy unavailable. Copy the selected text manually",
+    "manualLabel": "Copy the selected prompt manually",
+    "editorTitle": "Prompt for critical review",
+    "editorHint": "Edits apply only to the prompt copy and do not change test answers.",
+    "restore": "Restore original",
+    "editablePrompt": "Editable prompt",
+    "copyEdited": "Copy edited version",
+    "warning": "AI can offer an additional perspective, but its answer is not proof of demand. Validate conclusions through conversations, sign-ups, sales, and real user behavior.",
+    "downloadPromptHeader": "AI PROMPT"
+  },
+  "categories": {
+    "beautifulMechanism": {
+      "label": "Beautiful mechanism",
+      "description": "The idea still has more interesting concept than confirmed problem. Do not move to development. First find a specific user and check whether they already try to solve this task."
+    },
+    "weakHypothesis": {
+      "label": "Weak or incomplete hypothesis",
+      "description": "The idea may have a useful feature or niche scenario, but business value is not yet clear enough. Clarify the audience, problem strength, and payment moment."
+    },
+    "cheapTest": {
+      "label": "Worth running a cheap test",
+      "description": "There are signs of a real problem, but not enough evidence yet. Do not build a full product. Run one short test and collect observable behavior."
+    },
+    "strongHypothesis": {
+      "label": "Strong hypothesis to validate",
+      "description": "The idea has a clear user, existing behavior, and noticeable value. The next stage is not full product development, but demand validation through sales, sign-ups, or manual service delivery."
+    }
+  },
+  "recommendations": {
+    "user": "Describe one specific user and the situation in which the problem appears.",
+    "behavior": "Find 5 people and ask when they last faced this task and what they did.",
+    "payment": "Find an existing transaction or budget near which the product can earn money.",
+    "alternatives": "Ask users to walk through their current problem-solving process step by step.",
+    "evidence": "Do not ask whether they like the idea. Check action: sign-up, pre-order, interview consent, or willingness to pay.",
+    "test": "Formulate one key hypothesis and a way to test it manually without development."
+  },
+  "prompt": {
+    "intro": "Analyze this business idea critically. Do not try to confirm its potential or invent advantages without grounds.",
+    "tasks": "Find assumptions the user treats as facts. Show the main weak spots. Determine whether a real problem exists or only an interesting mechanism. Say who would pay for what specifically. Suggest one minimal test without full development. At the end, decide: validate now, refine the hypothesis, or archive.",
+    "format": "Do not write a large business plan. The answer should be direct and compact.",
+    "testData": "TEST DATA",
+    "name": "Name",
+    "description": "Description",
+    "audience": "Target audience",
+    "interest": "Why the idea seems interesting",
+    "answers": "ANSWERS",
+    "answer": "Answer",
+    "noAnswer": "No answer",
+    "appResult": "APP RESULT",
+    "score": "Score",
+    "category": "Category",
+    "stopFactors": "Stop factors",
+    "cheapestTest": "Cheapest test"
+  },
+  "questions": {
+    "user": {
+      "title": "Can you name a specific person or type of business the product is for?",
+      "why": "The more precise the user, the easier it is to validate the problem and find first interviewees.",
+      "options": [
+        { "text": "No, the product is potentially for everyone", "explanation": "Audience is not defined yet." },
+        { "text": "There is a broad audience but no specific segment", "explanation": "There is direction, but the segment is still vague." },
+        { "text": "There is a specific user type with a clear situation", "explanation": "The user and their context are clear." }
+      ]
+    },
+    "behavior": {
+      "title": "What do people already do to solve this problem?",
+      "why": "Existing behavior is a stronger signal than stated interest.",
+      "options": [
+        { "text": "Nothing yet — this is only an assumed need", "explanation": "No confirmed behavior." },
+        { "text": "Sometimes use workarounds", "explanation": "There are weak workaround scenarios." },
+        { "text": "Actively search for solutions, use services, spreadsheets, chats, or manual work", "explanation": "People already spend effort solving it." }
+      ]
+    },
+    "pain": {
+      "title": "What does the user lose because of this problem?",
+      "why": "A strong loss more often creates motivation to act and pay.",
+      "options": [
+        { "text": "Almost nothing — mostly inconvenience", "explanation": "The problem weakly affects outcomes." },
+        { "text": "Time, attention, or comfort", "explanation": "There are noticeable but moderate losses." },
+        { "text": "Money, customers, safety, an important opportunity, or a lot of work time", "explanation": "The cost of the problem is high." }
+      ]
+    },
+    "urgency": {
+      "title": "How easily can the user postpone solving the problem?",
+      "why": "Urgency shows whether a real moment of action will appear.",
+      "options": [
+        { "text": "Can ignore it indefinitely", "explanation": "No moment forcing action." },
+        { "text": "Would be nice to solve", "explanation": "Solving helps, but is not required." },
+        { "text": "The problem must be solved at a specific moment", "explanation": "There is a clear moment of action." }
+      ]
+    },
+    "frequency": {
+      "title": "How often does the problem occur?",
+      "why": "Frequency increases value, but a rare critical problem can still matter.",
+      "options": [
+        { "text": "Once or twice in a lifetime, or very rarely", "explanation": "The scenario is rare." },
+        { "text": "Several times a year or in important situations", "explanation": "The problem is periodic." },
+        { "text": "Monthly, weekly, or constantly", "explanation": "The problem occurs regularly." }
+      ]
+    },
+    "payment": {
+      "title": "Is there a natural moment when the user is already ready to pay?",
+      "why": "A clear budget or transaction makes monetization easier to validate.",
+      "options": [
+        { "text": "No — it is still unclear what they would pay for", "explanation": "Payment moment not found." },
+        { "text": "The user could theoretically buy a subscription or pay once", "explanation": "Payment is possible, but still hypothetical." },
+        { "text": "A transaction or dedicated budget already exists in this situation", "explanation": "There is an existing money flow." }
+      ]
+    },
+    "alternatives": {
+      "title": "How well do current ways solve the problem?",
+      "why": "You need to be noticeably better than the existing process, not just newer.",
+      "options": [
+        { "text": "Already good enough", "explanation": "Current alternatives are strong." },
+        { "text": "They work but require extra steps", "explanation": "There is moderate friction." },
+        { "text": "Expensive, unreliable, opaque, or require a lot of manual work", "explanation": "Alternatives have clear weaknesses." }
+      ]
+    },
+    "access": {
+      "title": "Can you quickly find people to validate the idea?",
+      "why": "Without access to users, even a good hypothesis is hard to test.",
+      "options": [
+        { "text": "I do not know where to find such people", "explanation": "No channel to reach the audience." },
+        { "text": "I know a few communities or channels", "explanation": "There are potential channels." },
+        { "text": "I already talk to such people or can reach them directly", "explanation": "Users are accessible for validation." }
+      ]
+    },
+    "evidence": {
+      "title": "What demand evidence do you already have?",
+      "why": "Observable action matters more than opinions and compliments.",
+      "options": [
+        { "text": "Only my own feeling and thinking", "explanation": "No external evidence yet." },
+        { "text": "Seen discussions, complaints, competitors, or similar behavior", "explanation": "There are indirect signals." },
+        { "text": "Interviews, requests, sign-ups, pre-orders, or real payments", "explanation": "There are direct demand signals." }
+      ]
+    },
+    "test": {
+      "title": "Can the key hypothesis be tested without full development?",
+      "why": "A good early test saves months of development.",
+      "options": [
+        { "text": "I do not know how yet", "explanation": "Cheap test not defined." },
+        { "text": "Can make a landing page, form, manual service, or interviews", "explanation": "There is a low-cost validation format." },
+        { "text": "There is a specific test that can launch in a few days", "explanation": "The next experiment is already clear." }
+      ]
+    }
+  }
+}

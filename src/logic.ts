@@ -1,79 +1,64 @@
-import { questions, byId } from './questions';
+import type { TFunction } from 'i18next';
+import { buildQuestions, byId, questionDefs } from './questions';
 import type { AnswerMap, Idea, ResultCategory, SavedResult } from './types';
 
+const CRITICAL_IDS = ['behavior', 'pain', 'payment', 'evidence'] as const;
+const REC_IDS = ['user', 'behavior', 'payment', 'alternatives', 'evidence', 'test'] as const;
+
+export const categoryLabel = (category: ResultCategory, t: TFunction) =>
+  t(`categories.${category}.label`);
+
+export const categoryDescription = (category: ResultCategory, t: TFunction) =>
+  t(`categories.${category}.description`);
+
 export const scoreAnswers = (answers: AnswerMap) =>
-  questions.reduce((sum, q) => sum + (q.options[answers[q.id]]?.score ?? 0), 0);
+  questionDefs.reduce((sum, q) => sum + (q.options[answers[q.id]]?.score ?? 0), 0);
+
 export const answerScore = (answers: AnswerMap, id: string) =>
   byId[id].options[answers[id]]?.score ?? 0;
 
-export function classify(answers: AnswerMap): {
+export function classify(answers: AnswerMap, t: TFunction): {
   score: number;
   category: ResultCategory;
   stopFactors: string[];
 } {
+  const questions = buildQuestions(t);
+  const questionById = Object.fromEntries(questions.map((q) => [q.id, q]));
   const score = scoreAnswers(answers);
-  const critical = ['behavior', 'pain', 'payment', 'evidence'].filter(
-    (id) => answerScore(answers, id) === 0,
-  );
-  const stopFactors = critical.map((id) => byId[id].title);
+  const critical = CRITICAL_IDS.filter((id) => answerScore(answers, id) === 0);
+  const stopFactors = critical.map((id) => questionById[id].title);
   if (['user', 'behavior', 'payment'].every((id) => answerScore(answers, id) === 0))
-    return { score, category: 'Красивая механика', stopFactors };
+    return { score, category: 'beautifulMechanism', stopFactors };
   let category: ResultCategory =
     score <= 6
-      ? 'Красивая механика'
+      ? 'beautifulMechanism'
       : score <= 11
-        ? 'Слабая или неполная гипотеза'
+        ? 'weakHypothesis'
         : score <= 16
-          ? 'Стоит провести дешёвый тест'
-          : 'Сильная гипотеза для проверки';
-  if (
-    critical.length >= 2 &&
-    !['Красивая механика', 'Слабая или неполная гипотеза'].includes(category)
-  )
-    category = 'Слабая или неполная гипотеза';
+          ? 'cheapTest'
+          : 'strongHypothesis';
+  if (critical.length >= 2 && !['beautifulMechanism', 'weakHypothesis'].includes(category))
+    category = 'weakHypothesis';
   return { score, category, stopFactors };
 }
 
-export const categoryCopy: Record<ResultCategory, string> = {
-  'Красивая механика':
-    'Пока в идее больше интересной концепции, чем подтверждённой проблемы. Не переходи к разработке. Сначала найди конкретного пользователя и проверь, пытается ли он уже решить эту задачу.',
-  'Слабая или неполная гипотеза':
-    'В идее может быть полезная функция или нишевый сценарий, но бизнес-ценность пока недостаточно выражена. Нужно уточнить аудиторию, силу проблемы и момент оплаты.',
-  'Стоит провести дешёвый тест':
-    'Есть признаки реальной проблемы, но пока недостаточно доказательств. Не строй полноценный продукт. Проведи один короткий тест и собери наблюдаемое поведение.',
-  'Сильная гипотеза для проверки':
-    'У идеи есть понятный пользователь, существующее поведение и заметная ценность. Следующий этап — не разработка полноценного продукта, а проверка спроса через продажи, заявки или ручное оказание услуги.',
-};
+export const recommendations = (answers: AnswerMap, t: TFunction) =>
+  REC_IDS.filter((id) => answerScore(answers, id) < 2).map((id) => t(`recommendations.${id}`));
 
-const recs: Record<string, string> = {
-  user: 'Опиши одного конкретного пользователя и ситуацию, в которой у него возникает проблема.',
-  behavior:
-    'Найди 5 человек и спроси, когда они последний раз сталкивались с этой задачей и что сделали.',
-  payment:
-    'Найди существующую транзакцию или бюджет, рядом с которым продукт может получать деньги.',
-  alternatives: 'Попроси пользователей показать текущий процесс решения проблемы пошагово.',
-  evidence:
-    'Не спрашивай, нравится ли идея. Проверь действие: заявка, предзаказ, согласие на интервью или готовность заплатить.',
-  test: 'Сформулируй одну ключевую гипотезу и способ проверить её вручную без разработки.',
-};
-export const recommendations = (answers: AnswerMap) =>
-  Object.entries(recs)
-    .filter(([id]) => answerScore(answers, id) < 2)
-    .map(([, text]) => text);
-
-export function generatePrompt(idea: Idea, answers: AnswerMap, cheapTest: string): string {
-  const result = classify(answers);
+export function generatePrompt(idea: Idea, answers: AnswerMap, cheapTest: string, t: TFunction): string {
+  const questions = buildQuestions(t);
+  const result = classify(answers, t);
   const rows = questions
     .map(
       (q, i) =>
-        `${i + 1}. ${q.title}\nОтвет: ${q.options[answers[q.id]]?.text ?? 'Нет ответа'} (${q.options[answers[q.id]]?.score ?? 0}/2)`,
+        `${i + 1}. ${q.title}\n${t('prompt.answer')}: ${q.options[answers[q.id]]?.text ?? t('prompt.noAnswer')} (${q.options[answers[q.id]]?.score ?? 0}/2)`,
     )
     .join('\n\n');
-  return `Проанализируй бизнес-идею критически. Не пытайся подтвердить её перспективность и не придумывай преимущества без оснований.\n\nНайди предположения, которые пользователь выдаёт за факты. Покажи главные слабые места. Определи, существует ли реальная проблема или только интересная механика. Скажи, кто и за что конкретно может заплатить. Предложи один минимальный тест без полноценной разработки. В конце вынеси решение: проверять сейчас, уточнить гипотезу или архивировать.\n\nНе составляй большой бизнес-план. Ответ должен быть прямым и компактным.\n\nДАННЫЕ ТЕСТА\nНазвание: ${idea.name}\nОписание: ${idea.description}\nЦелевая аудитория: ${idea.audience}\nПочему идея интересна: ${idea.interest || 'Не указано'}\n\nОТВЕТЫ\n${rows}\n\nИТОГ ПРИЛОЖЕНИЯ\nБаллы: ${result.score}/20\nКатегория: ${result.category}\nСтоп-факторы: ${result.stopFactors.length ? result.stopFactors.join('; ') : 'Не сработали'}\nСамый дешёвый тест: ${cheapTest || 'Не указан'}`;
+  return `${t('prompt.intro')}\n\n${t('prompt.tasks')}\n\n${t('prompt.format')}\n\n${t('prompt.testData')}\n${t('prompt.name')}: ${idea.name}\n${t('prompt.description')}: ${idea.description}\n${t('prompt.audience')}: ${idea.audience}\n${t('prompt.interest')}: ${idea.interest || t('common.notSpecified')}\n\n${t('prompt.answers')}\n${rows}\n\n${t('prompt.appResult')}\n${t('prompt.score')}: ${result.score}/20\n${t('prompt.category')}: ${categoryLabel(result.category, t)}\n${t('prompt.stopFactors')}: ${result.stopFactors.length ? result.stopFactors.join('; ') : t('common.notTriggered')}\n${t('prompt.cheapestTest')}: ${cheapTest || t('common.notSpecified')}`;
 }
 
-export const makeResult = (idea: Idea, answers: AnswerMap, cheapTest: string): SavedResult => {
-  const r = classify(answers);
+export const makeResult = (idea: Idea, answers: AnswerMap, cheapTest: string, t: TFunction): SavedResult => {
+  const r = classify(answers, t);
   return {
     id: crypto.randomUUID(),
     createdAt: new Date().toISOString(),
@@ -83,9 +68,11 @@ export const makeResult = (idea: Idea, answers: AnswerMap, cheapTest: string): S
     ...r,
   };
 };
-export const resultText = (r: SavedResult) =>
-  `${r.idea.name}\n${r.score}/20 — ${r.category}\n\n${categoryCopy[r.category]}\n\nСледующие шаги:\n${recommendations(
+
+export const resultText = (r: SavedResult, t: TFunction) =>
+  `${r.idea.name}\n${r.score}/20 — ${categoryLabel(r.category, t)}\n\n${categoryDescription(r.category, t)}\n\n${t('result.nextSteps')}\n${recommendations(
     r.answers,
+    t,
   )
     .map((x) => `• ${x}`)
     .join('\n')}`;

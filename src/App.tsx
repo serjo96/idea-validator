@@ -1,8 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
-import { questions } from './questions';
-import { categoryCopy, classify, makeResult, recommendations, resultText } from './logic';
+import { useTranslation } from 'react-i18next';
+import { buildQuestions } from './questions';
+import {
+  categoryDescription,
+  categoryLabel,
+  classify,
+  makeResult,
+  recommendations,
+  resultText,
+} from './logic';
 import { clearDraft, deleteResult, loadDraft, loadResults, saveDraft, saveResult } from './storage';
 import { AiSection } from './AiSection';
+import { setStoredLanguage, type AppLanguage } from './i18n';
 import type { AnswerMap, Idea, SavedResult } from './types';
 
 type Screen = 'home' | 'about' | 'quiz' | 'result' | 'history';
@@ -10,6 +19,8 @@ type Draft = { screen: Screen; idea: Idea; answers: AnswerMap; step: number; che
 const emptyIdea: Idea = { name: '', description: '', audience: '', interest: '' };
 
 export default function App() {
+  const { t, i18n } = useTranslation();
+  const questions = useMemo(() => buildQuestions(t), [t, i18n.language]);
   const draft = useMemo(() => loadDraft<Draft>(), []);
   const [screen, setScreen] = useState<Screen>(draft?.screen === 'quiz' ? 'quiz' : 'home');
   const [idea, setIdea] = useState(draft?.idea ?? emptyIdea);
@@ -36,7 +47,7 @@ export default function App() {
     setScreen('about');
   };
   const finish = () => {
-    const r = makeResult(idea, answers, cheapTest);
+    const r = makeResult(idea, answers, cheapTest, t);
     saveResult(r);
     setHistory(loadResults());
     setResult(r);
@@ -47,50 +58,51 @@ export default function App() {
     setResult(r);
     setScreen('result');
   };
+  const changeLanguage = (lang: AppLanguage) => {
+    setStoredLanguage(lang);
+    void i18n.changeLanguage(lang);
+  };
   if (screen === 'home')
     return (
-      <Shell onHistory={() => setScreen('history')}>
+      <Shell onHistory={() => setScreen('history')} onLanguageChange={changeLanguage}>
         <main className="hero">
           <div className="hero-copy">
-            <div className="eyebrow">Idea reality check · 3–5 минут</div>
-            <h1>Отдели реальную проблему от красивой механики.</h1>
-            <p>
-              Короткий структурированный тест покажет качество гипотезы и предложит следующий
-              дешёвый шаг — без AI и ложной точности.
-            </p>
+            <div className="eyebrow">{t('home.eyebrow')}</div>
+            <h1>{t('home.title')}</h1>
+            <p>{t('home.lead')}</p>
             <div className="hero-actions">
               <button className="button primary" onClick={() => setScreen('about')}>
-                Проверить идею
+                {t('home.start')}
               </button>
               {draft && (
                 <button className="button secondary" onClick={() => setScreen('quiz')}>
-                  Продолжить тест
+                  {t('home.resume')}
                 </button>
               )}
             </div>
-            <p className="fine">Это первичный фильтр, а не доказательство жизнеспособности.</p>
+            <p className="fine">{t('home.fine')}</p>
           </div>
-          <div className="hero-card" aria-label="Что вы получите">
+          <div className="hero-card" aria-label={t('home.cardLabel')}>
             <span>01</span>
-            <h2>10 вопросов</h2>
-            <p>О пользователе, поведении, ценности, оплате и доказательствах.</p>
+            <h2>{t('home.card1Title')}</h2>
+            <p>{t('home.card1Text')}</p>
             <span>02</span>
-            <h2>Чёткий следующий шаг</h2>
-            <p>Результат рассчитывается по прозрачным правилам.</p>
+            <h2>{t('home.card2Title')}</h2>
+            <p>{t('home.card2Text')}</p>
           </div>
         </main>
       </Shell>
     );
   if (screen === 'about')
     return (
-      <Shell onHistory={() => setScreen('history')}>
+      <Shell onHistory={() => setScreen('history')} onLanguageChange={changeLanguage}>
         <main className="narrow">
           <button className="back" onClick={() => setScreen('home')}>
-            ← На главную
+            {t('common.backHome')}
           </button>
-          <div className="eyebrow">Перед началом</div>
-          <h1>Коротко опиши идею</h1>
-          <p className="lead">Достаточно пары конкретных предложений. Это не питч для инвестора.</p>
+          <div className="eyebrow">{t('about.eyebrow')}</div>
+          <h1>{t('about.title')}</h1>
+          <p className="lead">{t('about.lead')}</p>
           <form
             className="idea-form"
             onSubmit={(e) => {
@@ -99,32 +111,32 @@ export default function App() {
             }}
           >
             <Field
-              label="Название идеи"
+              label={t('about.nameLabel')}
               value={idea.name}
               onChange={(name) => setIdea({ ...idea, name })}
               required
             />
             <Field
-              label="Описание в 2–5 предложениях"
+              label={t('about.descriptionLabel')}
               value={idea.description}
               onChange={(description) => setIdea({ ...idea, description })}
               area
               required
             />
             <Field
-              label="Кто предполагаемый пользователь"
+              label={t('about.audienceLabel')}
               value={idea.audience}
               onChange={(audience) => setIdea({ ...idea, audience })}
               required
             />
             <Field
-              label="Почему идея кажется интересной (необязательно)"
+              label={t('about.interestLabel')}
               value={idea.interest}
               onChange={(interest) => setIdea({ ...idea, interest })}
               area
             />
             <button className="button primary" type="submit">
-              Перейти к вопросам →
+              {t('about.submit')}
             </button>
           </form>
         </main>
@@ -134,10 +146,14 @@ export default function App() {
     const final = step === questions.length;
     const q = questions[step];
     return (
-      <Shell>
+      <Shell onLanguageChange={changeLanguage}>
         <main className="quiz">
           <div className="progress-meta">
-            <span>{final ? 'Последний шаг' : `Вопрос ${step + 1} из ${questions.length}`}</span>
+            <span>
+              {final
+                ? t('quiz.finalStep')
+                : t('quiz.progress', { current: step + 1, total: questions.length })}
+            </span>
             <span>{Math.round((step / (questions.length + 1)) * 100)}%</span>
           </div>
           <div className="progress">
@@ -165,16 +181,14 @@ export default function App() {
             </>
           ) : (
             <>
-              <h1>Какой самый дешёвый тест идеи ты сейчас видишь?</h1>
-              <p className="why">
-                Не влияет на баллы, но станет частью итогового отчёта и AI-промпта.
-              </p>
+              <h1>{t('quiz.cheapTestTitle')}</h1>
+              <p className="why">{t('quiz.cheapTestWhy')}</p>
               <textarea
                 className="cheap-test"
                 value={cheapTest}
                 onChange={(e) => setCheapTest(e.target.value)}
                 rows={7}
-                placeholder="Например: предложить ручной сервис десяти владельцам небольших кофеен…"
+                placeholder={t('quiz.cheapTestPlaceholder')}
               />
             </>
           )}
@@ -183,11 +197,11 @@ export default function App() {
               className="button ghost"
               onClick={() => (step ? setStep(step - 1) : setScreen('about'))}
             >
-              ← Назад
+              {t('common.back')}
             </button>
             {final ? (
               <button className="button primary" onClick={finish}>
-                Показать результат
+                {t('quiz.showResult')}
               </button>
             ) : (
               <button
@@ -195,7 +209,7 @@ export default function App() {
                 disabled={answers[q.id] === undefined}
                 onClick={() => setStep(step + 1)}
               >
-                Далее →
+                {t('common.next')}
               </button>
             )}
           </div>
@@ -205,19 +219,19 @@ export default function App() {
   }
   if (screen === 'history')
     return (
-      <Shell>
+      <Shell onLanguageChange={changeLanguage}>
         <main className="wide">
           <button className="back" onClick={() => setScreen('home')}>
-            ← На главную
+            {t('common.backHome')}
           </button>
-          <div className="eyebrow">Сохранено локально</div>
-          <h1>История проверок</h1>
+          <div className="eyebrow">{t('history.eyebrow')}</div>
+          <h1>{t('history.title')}</h1>
           {!history.length ? (
             <div className="empty">
-              <h2>Здесь пока пусто</h2>
-              <p>Пройди первый тест — результат сохранится только в этом браузере.</p>
+              <h2>{t('history.emptyTitle')}</h2>
+              <p>{t('history.emptyText')}</p>
               <button className="button primary" onClick={() => setScreen('about')}>
-                Проверить идею
+                {t('history.start')}
               </button>
             </div>
           ) : (
@@ -225,15 +239,15 @@ export default function App() {
               {history.map((r) => (
                 <article key={r.id}>
                   <div>
-                    <time>{new Date(r.createdAt).toLocaleDateString('ru-RU')}</time>
+                    <time>{new Date(r.createdAt).toLocaleDateString(i18n.language)}</time>
                     <h2>{r.idea.name}</h2>
                     <p>
-                      {r.score}/20 · {r.category}
+                      {r.score}/20 · {categoryLabel(r.category, t)}
                     </p>
                   </div>
                   <div>
                     <button className="button secondary" onClick={() => openResult(r)}>
-                      Открыть
+                      {t('common.open')}
                     </button>
                     <button
                       className="text-button danger"
@@ -242,7 +256,7 @@ export default function App() {
                         setHistory(loadResults());
                       }}
                     >
-                      Удалить
+                      {t('common.delete')}
                     </button>
                   </div>
                 </article>
@@ -253,22 +267,22 @@ export default function App() {
       </Shell>
     );
   if (!result) return null;
-  const r = classify(result.answers);
-  const recs = recommendations(result.answers);
+  const r = classify(result.answers, t);
+  const recs = recommendations(result.answers, t);
   const strong = questions.filter((q) => q.options[result.answers[q.id]]?.score === 2);
   const weak = questions.filter((q) => q.options[result.answers[q.id]]?.score === 0);
   return (
-    <Shell onHistory={() => setScreen('history')}>
+    <Shell onHistory={() => setScreen('history')} onLanguageChange={changeLanguage}>
       <main className="result-page">
         <section className="result-hero">
           <div>
             <button className="back light" onClick={() => setScreen('history')}>
-              ← К истории
+              {t('common.backHistory')}
             </button>
-            <div className="eyebrow">Результат проверки</div>
+            <div className="eyebrow">{t('result.eyebrow')}</div>
             <h1>{result.idea.name}</h1>
-            <div className="category">{r.category}</div>
-            <p>{categoryCopy[r.category]}</p>
+            <div className="category">{categoryLabel(r.category, t)}</div>
+            <p>{categoryDescription(r.category, t)}</p>
           </div>
           <div
             className="score-ring"
@@ -276,30 +290,27 @@ export default function App() {
           >
             <div>
               <strong>{r.score}</strong>
-              <span>из 20</span>
+              <span>{t('common.outOf', { total: 20 })}</span>
             </div>
           </div>
         </section>
-        <p className="disclaimer">
-          Результат не доказывает, что идея успешна или неуспешна. Он показывает качество текущей
-          гипотезы и помогает выбрать следующий шаг.
-        </p>
+        <p className="disclaimer">{t('result.disclaimer')}</p>
         <section className="result-grid">
           <ResultBlock
-            title="Сильные стороны"
+            title={t('result.strengths')}
             items={strong.map((q) => q.options[result.answers[q.id]].explanation)}
-            empty="Сильные сигналы пока не выявлены."
+            empty={t('result.strengthsEmpty')}
           />
           <ResultBlock
-            title="Слабые стороны"
+            title={t('result.weaknesses')}
             items={weak.map((q) => q.options[result.answers[q.id]].explanation)}
-            empty="Явных слабых сигналов нет — но их всё равно нужно проверить."
+            empty={t('result.weaknessesEmpty')}
           />
         </section>
         {r.stopFactors.length > 0 && (
           <section className="stop">
-            <h2>Сработали стоп-факторы</h2>
-            <p>Они ограничили итоговую категорию, даже если сумма баллов выше.</p>
+            <h2>{t('result.stopTitle')}</h2>
+            <p>{t('result.stopText')}</p>
             <ul>
               {r.stopFactors.map((x) => (
                 <li key={x}>{x}</li>
@@ -308,8 +319,8 @@ export default function App() {
           </section>
         )}
         <section className="next">
-          <div className="section-kicker">Не строй — проверь</div>
-          <h2>Рекомендуемое следующее действие</h2>
+          <div className="section-kicker">{t('result.nextKicker')}</div>
+          <h2>{t('result.nextTitle')}</h2>
           <ol>
             {recs.slice(0, 3).map((x) => (
               <li key={x}>{x}</li>
@@ -317,7 +328,7 @@ export default function App() {
           </ol>
         </section>
         <details className="answers">
-          <summary>Все ответы по критериям</summary>
+          <summary>{t('result.allAnswers')}</summary>
           {questions.map((q) => (
             <div key={q.id}>
               <span>{q.title}</span>
@@ -331,23 +342,23 @@ export default function App() {
             className="button secondary"
             onClick={() =>
               navigator.clipboard
-                .writeText(resultText(result))
-                .then(() => flash('Результат скопирован'))
+                .writeText(resultText(result, t))
+                .then(() => flash(t('result.copied')))
             }
           >
-            Скопировать результат
+            {t('result.copy')}
           </button>
           <button
             className="button ghost"
             onClick={() => {
               saveResult(result);
-              flash('Результат сохранён');
+              flash(t('result.saved'));
             }}
           >
-            Сохранить результат
+            {t('result.save')}
           </button>
           <button className="button ghost" onClick={reset}>
-            Проверить другую идею
+            {t('result.reset')}
           </button>
         </div>
         {copied && (
@@ -355,28 +366,52 @@ export default function App() {
             {copied}
           </div>
         )}
-        <AiSection key={result.id} result={result} />
+        <AiSection key={`${result.id}-${i18n.language}`} result={result} />
       </main>
     </Shell>
   );
 }
 
-function Shell({ children, onHistory }: { children: React.ReactNode; onHistory?: () => void }) {
+function Shell({
+  children,
+  onHistory,
+  onLanguageChange,
+}: {
+  children: React.ReactNode;
+  onHistory?: () => void;
+  onLanguageChange: (lang: AppLanguage) => void;
+}) {
+  const { t, i18n } = useTranslation();
   return (
     <>
       <header>
         <button className="brand" onClick={() => location.reload()}>
           <i />
-          Idea Validator
+          {t('shell.brand')}
         </button>
-        {onHistory && (
-          <button className="header-link" onClick={onHistory}>
-            История
-          </button>
-        )}
+        <div className="header-actions">
+          <div className="lang-switch" role="group" aria-label={t('shell.language')}>
+            {(['ru', 'en'] as const).map((lang) => (
+              <button
+                key={lang}
+                type="button"
+                className={`lang-button${i18n.language === lang ? ' active' : ''}`}
+                aria-pressed={i18n.language === lang}
+                onClick={() => onLanguageChange(lang)}
+              >
+                {lang.toUpperCase()}
+              </button>
+            ))}
+          </div>
+          {onHistory && (
+            <button className="header-link" onClick={onHistory}>
+              {t('shell.history')}
+            </button>
+          )}
+        </div>
       </header>
       {children}
-      <footer>Детерминированная оценка · Данные остаются в браузере</footer>
+      <footer>{t('shell.footer')}</footer>
     </>
   );
 }

@@ -58,6 +58,29 @@ header {
   display: block;
   border-right-color: var(--lime);
 }
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.lang-switch {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.lang-button {
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 12px;
+  padding: 6px 10px;
+}
+.lang-button.active {
+  background: var(--green);
+  color: #fff;
+}
 .header-link,
 .back,
 .text-button {

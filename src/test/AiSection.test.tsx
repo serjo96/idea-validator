@@ -25,7 +25,7 @@ const result: SavedResult = {
   answers,
   cheapTest: 'Ручная продажа',
   score: 20,
-  category: 'Сильная гипотеза для проверки',
+  category: 'strongHypothesis',
 };
 
 let writeText: ReturnType<typeof vi.fn>;
