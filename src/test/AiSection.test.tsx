@@ -9,7 +9,7 @@ const answers = Object.fromEntries(
     'behavior',
     'pain',
     'urgency',
-    'frequency',
+    'stakeholders',
     'payment',
     'alternatives',
     'access',
@@ -24,7 +24,7 @@ const result: SavedResult = {
   idea: { name: 'Тестовая идея', description: 'Описание', audience: 'Аудитория', interest: '' },
   answers,
   cheapTest: 'Ручная продажа',
-  score: 20,
+  score: 18,
   category: 'strongHypothesis',
 };
 

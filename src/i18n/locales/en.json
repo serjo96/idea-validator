@@ -45,6 +45,15 @@
     "cheapTestTitle": "What is the cheapest test you see for this idea right now?",
     "cheapTestWhy": "Does not affect the score, but becomes part of the final report and AI prompt.",
     "cheapTestPlaceholder": "For example: offer a manual service to ten small coffee shop owners…",
+    "strongestFactTitle": "What specific fact is your strongest answer based on?",
+    "strongestFactWhy": "Optional. Helps separate observation from assumption.",
+    "strongestFactPlaceholder": "For example: three coffee shop owners complained about the same problem this week…",
+    "killCriterionTitle": "What result would make you abandon the hypothesis or change it?",
+    "killCriterionWhy": "Optional. A predefined criterion makes validation more honest.",
+    "killCriterionPlaceholder": "For example: if none of 10 interviews are willing to pay more than the current solution…",
+    "frequencyTitle": "How often does the problem occur?",
+    "frequencyWhy": "Does not affect the score. For rare high-stakes scenarios, the cost of one case matters more than frequency.",
+    "frequencyEmpty": "Not specified",
     "showResult": "Show result"
   },
   "history": {
@@ -66,6 +75,7 @@
     "nextKicker": "Don't build — validate",
     "nextTitle": "Recommended next action",
     "allAnswers": "All answers by criterion",
+    "diagnostics": "Diagnostics without score",
     "copy": "Copy result",
     "save": "Save result",
     "reset": "Validate another idea",
@@ -117,8 +127,9 @@
     "behavior": "Find 5 people and ask when they last faced this task and what they did.",
     "payment": "Find an existing transaction or budget near which the product can earn money.",
     "alternatives": "Ask users to walk through their current problem-solving process step by step.",
-    "evidence": "Do not ask whether they like the idea. Check action: sign-up, pre-order, interview consent, or willingness to pay.",
-    "test": "Formulate one key hypothesis and a way to test it manually without development."
+    "evidence": "Do not stop at words. Look for effort, commitment, or payment.",
+    "test": "Formulate one key hypothesis and a way to test it manually without development.",
+    "stakeholders": "Clarify who actually uses the product, who decides to buy, and who pays."
   },
   "prompt": {
     "intro": "Analyze this business idea critically. Do not try to confirm its potential or invent advantages without grounds.",
@@ -136,7 +147,9 @@
     "score": "Score",
     "category": "Category",
     "stopFactors": "Stop factors",
-    "cheapestTest": "Cheapest test"
+    "cheapestTest": "Cheapest test",
+    "diagnostics": "DIAGNOSTICS",
+    "diagnostic": "no score"
   },
   "questions": {
     "user": {
@@ -159,7 +172,7 @@
     },
     "pain": {
       "title": "What does the user lose because of this problem?",
-      "why": "A strong loss more often creates motivation to act and pay.",
+      "why": "A strong loss creates motivation to act and pay. For rare scenarios — a deal, surgery, dispute — the cost of one case matters more than frequency.",
       "options": [
         { "text": "Almost nothing — mostly inconvenience", "explanation": "The problem weakly affects outcomes." },
         { "text": "Time, attention, or comfort", "explanation": "There are noticeable but moderate losses." },
@@ -175,13 +188,13 @@
         { "text": "The problem must be solved at a specific moment", "explanation": "There is a clear moment of action." }
       ]
     },
-    "frequency": {
-      "title": "How often does the problem occur?",
-      "why": "Frequency increases value, but a rare critical problem can still matter.",
+    "stakeholders": {
+      "title": "Who uses the product, who makes the decision, and who pays?",
+      "why": "In B2B and high-stakes scenarios, the user, decision maker, and payer are often different people.",
       "options": [
-        { "text": "Once or twice in a lifetime, or very rarely", "explanation": "The scenario is rare." },
-        { "text": "Several times a year or in important situations", "explanation": "The problem is periodic." },
-        { "text": "Monthly, weekly, or constantly", "explanation": "The problem occurs regularly." }
+        { "text": "Not thought through — seems like the same person", "explanation": "User, buyer, and payer roles are not separated." },
+        { "text": "General understanding, but roles may overlap", "explanation": "There is a picture, but role boundaries are still vague." },
+        { "text": "Clear who uses, who decides, and who pays", "explanation": "Roles are clear, even if they are different people." }
       ]
     },
     "payment": {
@@ -213,20 +226,30 @@
     },
     "evidence": {
       "title": "What demand evidence do you already have?",
-      "why": "Observable action matters more than opinions and compliments.",
+      "why": "Separate opinions, commitments, and money — each level is stronger than the last.",
       "options": [
-        { "text": "Only my own feeling and thinking", "explanation": "No external evidence yet." },
-        { "text": "Seen discussions, complaints, competitors, or similar behavior", "explanation": "There are indirect signals." },
-        { "text": "Interviews, requests, sign-ups, pre-orders, or real payments", "explanation": "There are direct demand signals." }
+        { "text": "Words only: discussions, complaints, interest, compliments", "explanation": "There are opinions, but no action." },
+        { "text": "Observable effort or commitment: time, manual work, sign-up, pilot agreement", "explanation": "People are already doing something or committing." },
+        { "text": "Usage or payment: real use, pre-orders, transactions", "explanation": "There is behavior or money." }
       ]
     },
     "test": {
       "title": "Can the key hypothesis be tested without full development?",
-      "why": "A good early test saves months of development.",
+      "why": "This is not a measure of idea strength, but readiness for the next step. Not knowing how to test yet does not make the problem weaker.",
       "options": [
-        { "text": "I do not know how yet", "explanation": "Cheap test not defined." },
+        { "text": "I do not know how yet", "explanation": "The next experiment is not defined yet." },
         { "text": "Can make a landing page, form, manual service, or interviews", "explanation": "There is a low-cost validation format." },
         { "text": "There is a specific test that can launch in a few days", "explanation": "The next experiment is already clear." }
+      ]
+    }
+  },
+  "diagnostics": {
+    "frequency": {
+      "title": "How often does the problem occur?",
+      "options": [
+        { "text": "Once or twice in a lifetime, or very rarely" },
+        { "text": "Several times a year or in important situations" },
+        { "text": "Monthly, weekly, or constantly" }
       ]
     }
   }

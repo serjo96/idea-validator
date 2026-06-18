@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import i18n from '../i18n';
-import { classify, generatePrompt, recommendations, scoreAnswers } from '../logic';
+import { classify, generatePrompt, MAX_SCORE, recommendations, scoreAnswers } from '../logic';
 import type { AnswerMap, Idea } from '../types';
 
 const t = i18n.getFixedT('ru');
@@ -12,7 +12,7 @@ const all = (value: number): AnswerMap =>
       'behavior',
       'pain',
       'urgency',
-      'frequency',
+      'stakeholders',
       'payment',
       'alternatives',
       'access',
@@ -27,7 +27,8 @@ const idea: Idea = {
   interest: '',
 };
 describe('scoring and prompt', () => {
-  it('counts total score', () => expect(scoreAnswers(all(2))).toBe(20));
+  it('counts total score without diagnostic test question', () =>
+    expect(scoreAnswers(all(2))).toBe(MAX_SCORE));
   it('classifies score bands', () =>
     expect(classify(all(1), t).category).toBe('weakHypothesis'));
   it('caps category when two stop factors are zero', () => {
@@ -47,10 +48,16 @@ describe('scoring and prompt', () => {
     expect(recommendations(a, t).join(' ')).toContain('транзакцию');
   });
   it('generates a complete structured prompt', () => {
-    const p = generatePrompt(idea, all(2), 'Продать вручную', t);
+    const p = generatePrompt(
+      idea,
+      all(2),
+      { cheapTest: 'Продать вручную', strongestFact: 'Три жалобы', killCriterion: 'Нет оплат' },
+      t,
+    );
     expect(p).toContain('Кофе вовремя');
-    expect(p).toContain('20/20');
+    expect(p).toContain(`${MAX_SCORE}/${MAX_SCORE}`);
     expect(p).toContain('Продать вручную');
+    expect(p).toContain('Три жалобы');
     expect(p).toContain('Не составляй большой бизнес-план');
   });
 });

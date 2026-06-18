@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { SavedResult } from './types';
 import { generatePrompt, resultText } from './logic';
+import type { QuizExtras, SavedResult } from './types';
 import { aiProviders } from './aiProviders';
 
 const Icon = ({ mark }: { mark: string }) => (
@@ -17,7 +17,13 @@ async function copyText(text: string) {
 
 export function AiSection({ result }: { result: SavedResult }) {
   const { t } = useTranslation();
-  const original = generatePrompt(result.idea, result.answers, result.cheapTest, t);
+  const extras: QuizExtras = {
+    cheapTest: result.cheapTest,
+    strongestFact: result.strongestFact,
+    killCriterion: result.killCriterion,
+    frequencyDiagnostic: result.frequencyDiagnostic,
+  };
+  const original = generatePrompt(result.idea, result.answers, extras, t);
   const [prompt, setPrompt] = useState(original);
   const [editor, setEditor] = useState(false);
   const [notice, setNotice] = useState('');
@@ -25,7 +31,7 @@ export function AiSection({ result }: { result: SavedResult }) {
   const fallbackRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    setPrompt(generatePrompt(result.idea, result.answers, result.cheapTest, t));
+    setPrompt(generatePrompt(result.idea, result.answers, extras, t));
   }, [result, t]);
 
   useEffect(() => {

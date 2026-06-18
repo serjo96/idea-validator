@@ -234,6 +234,8 @@ footer {
 .field input,
 .field textarea,
 .cheap-test,
+.final-step textarea,
+.diagnostic-select,
 .prompt-editor textarea,
 .manual-copy textarea {
   width: 100%;
@@ -242,6 +244,17 @@ footer {
   padding: 15px;
   border-radius: 10px;
   resize: vertical;
+}
+.final-step {
+  display: grid;
+  gap: 32px;
+}
+.final-step h2 {
+  font-size: clamp(24px, 3vw, 32px);
+  margin-bottom: 10px;
+}
+.diagnostic-select {
+  resize: none;
 }
 .quiz {
   max-width: 900px;

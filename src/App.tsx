@@ -6,6 +6,7 @@ import {
   categoryLabel,
   classify,
   makeResult,
+  MAX_SCORE,
   recommendations,
   resultText,
 } from './logic';
@@ -15,7 +16,16 @@ import { setStoredLanguage, type AppLanguage } from './i18n';
 import type { AnswerMap, Idea, SavedResult } from './types';
 
 type Screen = 'home' | 'about' | 'quiz' | 'result' | 'history';
-type Draft = { screen: Screen; idea: Idea; answers: AnswerMap; step: number; cheapTest: string };
+type Draft = {
+  screen: Screen;
+  idea: Idea;
+  answers: AnswerMap;
+  step: number;
+  cheapTest: string;
+  strongestFact?: string;
+  killCriterion?: string;
+  frequencyDiagnostic?: number;
+};
 const emptyIdea: Idea = { name: '', description: '', audience: '', interest: '' };
 
 export default function App() {
@@ -27,12 +37,27 @@ export default function App() {
   const [answers, setAnswers] = useState<AnswerMap>(draft?.answers ?? {});
   const [step, setStep] = useState(draft?.step ?? 0);
   const [cheapTest, setCheapTest] = useState(draft?.cheapTest ?? '');
+  const [strongestFact, setStrongestFact] = useState(draft?.strongestFact ?? '');
+  const [killCriterion, setKillCriterion] = useState(draft?.killCriterion ?? '');
+  const [frequencyDiagnostic, setFrequencyDiagnostic] = useState<number | undefined>(
+    draft?.frequencyDiagnostic,
+  );
   const [result, setResult] = useState<SavedResult | null>(null);
   const [history, setHistory] = useState(loadResults);
   const [copied, setCopied] = useState('');
   useEffect(() => {
-    if (screen === 'quiz') saveDraft({ screen, idea, answers, step, cheapTest });
-  }, [screen, idea, answers, step, cheapTest]);
+    if (screen === 'quiz')
+      saveDraft({
+        screen,
+        idea,
+        answers,
+        step,
+        cheapTest,
+        strongestFact,
+        killCriterion,
+        frequencyDiagnostic,
+      });
+  }, [screen, idea, answers, step, cheapTest, strongestFact, killCriterion, frequencyDiagnostic]);
   const flash = (s: string) => {
     setCopied(s);
     setTimeout(() => setCopied(''), 2500);
@@ -42,12 +67,20 @@ export default function App() {
     setAnswers({});
     setStep(0);
     setCheapTest('');
+    setStrongestFact('');
+    setKillCriterion('');
+    setFrequencyDiagnostic(undefined);
     setResult(null);
     clearDraft();
     setScreen('about');
   };
   const finish = () => {
-    const r = makeResult(idea, answers, cheapTest, t);
+    const r = makeResult(
+      idea,
+      answers,
+      { cheapTest, strongestFact, killCriterion, frequencyDiagnostic },
+      t,
+    );
     saveResult(r);
     setHistory(loadResults());
     setResult(r);
@@ -180,17 +213,57 @@ export default function App() {
               </fieldset>
             </>
           ) : (
-            <>
-              <h1>{t('quiz.cheapTestTitle')}</h1>
-              <p className="why">{t('quiz.cheapTestWhy')}</p>
-              <textarea
-                className="cheap-test"
-                value={cheapTest}
-                onChange={(e) => setCheapTest(e.target.value)}
-                rows={7}
-                placeholder={t('quiz.cheapTestPlaceholder')}
-              />
-            </>
+            <div className="final-step">
+              <div className="final-field">
+                <h1>{t('quiz.cheapTestTitle')}</h1>
+                <p className="why">{t('quiz.cheapTestWhy')}</p>
+                <textarea
+                  className="cheap-test"
+                  value={cheapTest}
+                  onChange={(e) => setCheapTest(e.target.value)}
+                  rows={5}
+                  placeholder={t('quiz.cheapTestPlaceholder')}
+                />
+              </div>
+              <div className="final-field">
+                <h2>{t('quiz.frequencyTitle')}</h2>
+                <p className="why">{t('quiz.frequencyWhy')}</p>
+                <select
+                  className="diagnostic-select"
+                  value={frequencyDiagnostic ?? ''}
+                  onChange={(e) =>
+                    setFrequencyDiagnostic(e.target.value === '' ? undefined : Number(e.target.value))
+                  }
+                >
+                  <option value="">{t('quiz.frequencyEmpty')}</option>
+                  {[0, 1, 2].map((i) => (
+                    <option key={i} value={i}>
+                      {t(`diagnostics.frequency.options.${i}.text`)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="final-field">
+                <h2>{t('quiz.strongestFactTitle')}</h2>
+                <p className="why">{t('quiz.strongestFactWhy')}</p>
+                <textarea
+                  value={strongestFact}
+                  onChange={(e) => setStrongestFact(e.target.value)}
+                  rows={4}
+                  placeholder={t('quiz.strongestFactPlaceholder')}
+                />
+              </div>
+              <div className="final-field">
+                <h2>{t('quiz.killCriterionTitle')}</h2>
+                <p className="why">{t('quiz.killCriterionWhy')}</p>
+                <textarea
+                  value={killCriterion}
+                  onChange={(e) => setKillCriterion(e.target.value)}
+                  rows={4}
+                  placeholder={t('quiz.killCriterionPlaceholder')}
+                />
+              </div>
+            </div>
           )}
           <div className="quiz-nav">
             <button
@@ -242,7 +315,7 @@ export default function App() {
                     <time>{new Date(r.createdAt).toLocaleDateString(i18n.language)}</time>
                     <h2>{r.idea.name}</h2>
                     <p>
-                      {r.score}/20 · {categoryLabel(r.category, t)}
+                      {r.score}/{MAX_SCORE} · {categoryLabel(r.category, t)}
                     </p>
                   </div>
                   <div>
@@ -269,8 +342,10 @@ export default function App() {
   if (!result) return null;
   const r = classify(result.answers, t);
   const recs = recommendations(result.answers, t);
-  const strong = questions.filter((q) => q.options[result.answers[q.id]]?.score === 2);
-  const weak = questions.filter((q) => q.options[result.answers[q.id]]?.score === 0);
+  const scoredQuestions = questions.filter((q) => q.scored !== false);
+  const diagnosticQuestions = questions.filter((q) => q.scored === false);
+  const strong = scoredQuestions.filter((q) => q.options[result.answers[q.id]]?.score === 2);
+  const weak = scoredQuestions.filter((q) => q.options[result.answers[q.id]]?.score === 0);
   return (
     <Shell onHistory={() => setScreen('history')} onLanguageChange={changeLanguage}>
       <main className="result-page">
@@ -286,11 +361,11 @@ export default function App() {
           </div>
           <div
             className="score-ring"
-            style={{ '--score': `${(r.score / 20) * 360}deg` } as React.CSSProperties}
+            style={{ '--score': `${(r.score / MAX_SCORE) * 360}deg` } as React.CSSProperties}
           >
             <div>
               <strong>{r.score}</strong>
-              <span>{t('common.outOf', { total: 20 })}</span>
+              <span>{t('common.outOf', { total: MAX_SCORE })}</span>
             </div>
           </div>
         </section>
@@ -329,7 +404,7 @@ export default function App() {
         </section>
         <details className="answers">
           <summary>{t('result.allAnswers')}</summary>
-          {questions.map((q) => (
+          {scoredQuestions.map((q) => (
             <div key={q.id}>
               <span>{q.title}</span>
               <strong>{q.options[result.answers[q.id]].score}/2</strong>
@@ -337,6 +412,38 @@ export default function App() {
             </div>
           ))}
         </details>
+        {(diagnosticQuestions.length > 0 ||
+          result.frequencyDiagnostic !== undefined ||
+          result.strongestFact ||
+          result.killCriterion) && (
+          <details className="answers diagnostics">
+            <summary>{t('result.diagnostics')}</summary>
+            {diagnosticQuestions.map((q) => (
+              <div key={q.id}>
+                <span>{q.title}</span>
+                <p>{q.options[result.answers[q.id]]?.text ?? t('common.notSpecified')}</p>
+              </div>
+            ))}
+            {result.frequencyDiagnostic !== undefined && (
+              <div>
+                <span>{t('diagnostics.frequency.title')}</span>
+                <p>{t(`diagnostics.frequency.options.${result.frequencyDiagnostic}.text`)}</p>
+              </div>
+            )}
+            {result.strongestFact && (
+              <div>
+                <span>{t('quiz.strongestFactTitle')}</span>
+                <p>{result.strongestFact}</p>
+              </div>
+            )}
+            {result.killCriterion && (
+              <div>
+                <span>{t('quiz.killCriterionTitle')}</span>
+                <p>{result.killCriterion}</p>
+              </div>
+            )}
+          </details>
+        )}
         <div className="result-actions">
           <button
             className="button secondary"

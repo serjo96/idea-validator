@@ -10,8 +10,17 @@ const LEGACY_CATEGORIES: Record<string, ResultCategory> = {
   'Сильная гипотеза для проверки': 'strongHypothesis',
 };
 
+const migrateAnswers = (answers: Record<string, number>) => {
+  if (answers.frequency !== undefined && answers.stakeholders === undefined) {
+    const { frequency, ...rest } = answers;
+    return { ...rest, stakeholders: frequency };
+  }
+  return answers;
+};
+
 const normalizeResult = (r: SavedResult): SavedResult => ({
   ...r,
+  answers: migrateAnswers(r.answers),
   category: LEGACY_CATEGORIES[r.category as string] ?? r.category,
 });
 
